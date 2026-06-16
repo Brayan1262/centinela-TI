@@ -1,0 +1,55 @@
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Maven
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+*.zip
+*.tar.gz
+*.rar
+
+# Gradle
+.gradle/
+build/
+
+# Node / Frontend
+node_modules/
+dist/
+build/
+.npm/
+
+# Python / AI Predictor
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.pytest_cache/
+
+# Agent Collector (Go/Rust/C++)
+bin/
+obj/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Docker
+.docker/
+
+# Environment Variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
