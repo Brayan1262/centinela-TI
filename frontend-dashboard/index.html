@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centinela TI - Dashboard Visual</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <header>
+            <h1>CENTINELA TI</h1>
+            <p class="subtitle">Centro de Mando Visual - Estado del Sistema</p>
+            <div class="status-indicator">
+                <span class="pulse"></span> Monitor Activo
+            </div>
+        </header>
+
+        <main class="charts-grid">
+            <!-- Gráfico CPU -->
+            <div class="chart-card">
+                <h2>Uso de CPU (%)</h2>
+                <div class="chart-wrapper">
+                    <canvas id="cpuChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico RAM -->
+            <div class="chart-card">
+                <h2>Uso de RAM (%)</h2>
+                <div class="chart-wrapper">
+                    <canvas id="ramChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico Disco -->
+            <div class="chart-card">
+                <h2>Uso de Disco (%)</h2>
+                <div class="chart-wrapper">
+                    <canvas id="discoChart"></canvas>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
