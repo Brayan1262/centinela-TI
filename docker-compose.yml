@@ -1,18 +1,60 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:15
-    container_name: centinela_db
+  db:
+    image: postgres:15-alpine
+    container_name: centinela-db
     environment:
-      POSTGRES_DB: centinela_db
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: centinela
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: rootpassword
     ports:
-      - "5436:5432"
+      - "5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-    restart: unless-stopped
+      - centinela_pg_data:/var/lib/postgresql/data
+    networks:
+      - centinela_net
+
+  backend-core:
+    build: 
+      context: ./backend-core
+    container_name: centinela-backend
+    restart: on-failure
+    depends_on:
+      - db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/centinela
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=rootpassword
+    ports:
+      - "8085:8080"
+    networks:
+      - centinela_net
+
+  ai-predictor:
+    build:
+      context: ./ai-predictor
+    container_name: centinela-ai
+    restart: on-failure
+    depends_on:
+      - backend-core
+    environment:
+      - BACKEND_HOST=http://backend-core:8080
+    networks:
+      - centinela_net
+
+  frontend-dashboard:
+    build:
+      context: ./frontend-dashboard
+    container_name: centinela-frontend
+    ports:
+      - "8090:80"
+    networks:
+      - centinela_net
+
+networks:
+  centinela_net:
+    driver: bridge
 
 volumes:
-  postgres_data:
+  centinela_pg_data:

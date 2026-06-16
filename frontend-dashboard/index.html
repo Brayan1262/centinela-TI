@@ -3,49 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Centinela TI - Dashboard Visual</title>
+    <title>Centinela TI - Enterprise Dashboard</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- Librerías Externas -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
-    <div class="dashboard-container">
-        <header>
-            <h1>CENTINELA TI</h1>
-            <p class="subtitle">Centro de Mando Visual - Estado del Sistema</p>
-            <div class="status-indicator">
-                <span class="pulse"></span> Monitor Activo
-            </div>
-        </header>
+    <!-- Efectos de Audio -->
+    <audio id="beepSound" src="https://www.soundjay.com/buttons/sounds/button-16.mp3" preload="auto"></audio>
+    <audio id="alertSound" src="https://www.soundjay.com/buttons/sounds/button-10.mp3" preload="auto"></audio>
 
-        <main class="charts-grid">
-            <!-- Gráfico CPU -->
-            <div class="chart-card">
-                <h2>Uso de CPU (%)</h2>
-                <div class="chart-wrapper">
-                    <canvas id="cpuChart"></canvas>
-                </div>
-            </div>
+    <!-- Fondo Animado de Burbujas -->
+    <div class="bubbles">
+        <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+        <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+        <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+    </div>
 
-            <!-- Gráfico RAM -->
-            <div class="chart-card">
-                <h2>Uso de RAM (%)</h2>
-                <div class="chart-wrapper">
-                    <canvas id="ramChart"></canvas>
-                </div>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <span class="shield-icon">🛡️</span>
+                <h2>CENTINELA</h2>
             </div>
+            <nav class="sidebar-nav">
+                <a href="#" data-target="view-dashboard" class="nav-link active">📊 Dashboard</a>
+                <a href="#" data-target="view-alerts" class="nav-link">🚨 Alertas IA</a>
+                <a href="#" data-target="view-profile" class="nav-link">👨‍💻 Mi Perfil</a>
+                <a href="#" data-target="view-settings" class="nav-link">⚙️ Configuración</a>
+            </nav>
+            <div class="system-status-panel">
+                <h4>ESTADO DEL NÚCLEO</h4>
+                <p id="tickerText">Sincronizando nodos...</p>
+            </div>
+        </aside>
 
-            <!-- Gráfico Disco -->
-            <div class="chart-card">
-                <h2>Uso de Disco (%)</h2>
-                <div class="chart-wrapper">
-                    <canvas id="discoChart"></canvas>
+        <!-- Contenido Principal -->
+        <main class="main-content">
+            <!-- Topbar Perfil -->
+            <header class="topbar">
+                <div class="topbar-title">
+                    <h1>Centro de Mando Visual</h1>
+                    <span class="status-badge"><span class="status-dot"></span>En Línea</span>
                 </div>
+                <div class="user-profile">
+                    <button id="fullscreenBtn" class="action-btn" style="margin-right: 15px;" title="Pantalla Completa">📺</button>
+                    <div class="user-info">
+                        <span class="user-name">Administrador</span>
+                        <span class="user-role">Nivel: ADMIN</span>
+                    </div>
+                    <div class="avatar">👨‍💻</div>
+                    <button id="logoutBtn" class="logout-btn">SALIR</button>
+                </div>
+            </header>
+
+            <!-- Vistas SPA -->
+            <div class="views-container">
+                
+                <!-- Vista: DASHBOARD -->
+                <section id="view-dashboard" class="view-section active">
+                    <section class="dashboard-grid">
+                        <div class="chart-card">
+                            <h3 class="cpu-title">Uso de CPU (%)</h3>
+                            <div class="chart-container">
+                                <canvas id="cpuChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-card">
+                            <h3 class="ram-title">Uso de RAM (%)</h3>
+                            <div class="chart-container">
+                                <canvas id="ramChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-card">
+                            <h3 class="disco-title">Uso de Disco (%)</h3>
+                            <div class="chart-container">
+                                <canvas id="discoChart"></canvas>
+                            </div>
+                        </div>
+                    </section>
+                </section>
+
+                <!-- Vista: ALERTAS IA -->
+                <section id="view-alerts" class="view-section">
+                    <div class="section-header">
+                        <h2>Historial de Alertas</h2>
+                        <p>Registro de incidentes y predicciones críticas detectadas por el modelo de Machine Learning.</p>
+                        <div>
+                            <button id="exportPdfBtn" class="action-btn" style="margin-right: 10px;">📄 Exportar PDF</button>
+                            <button id="refreshAlertsBtn" class="action-btn">Actualizar Ahora</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="cyber-table">
+                            <thead>
+                                <tr>
+                                    <th>ID Alerta</th>
+                                    <th>Mensaje Predictivo</th>
+                                    <th>Criticidad</th>
+                                    <th>Timestamp</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="alertsTableBody">
+                                <!-- Filas generadas por JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Vista: PERFIL -->
+                <section id="view-profile" class="view-section">
+                    <div class="profile-card-large">
+                        <div class="profile-header">
+                            <div class="avatar-large">👨‍💻</div>
+                            <div class="profile-titles">
+                                <h2>Administrador Supremo</h2>
+                                <p class="cyber-id">ID: CT-9904-Alpha</p>
+                            </div>
+                        </div>
+                        <div class="profile-details">
+                            <div class="detail-row">
+                                <span class="label">Nivel de Acceso:</span>
+                                <span class="value highlight-red">ADMIN (Tier 1)</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">Estado de Encriptación:</span>
+                                <span class="value highlight-green">MÁXIMO (AES-256)</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">Último Login:</span>
+                                <span class="value">Sesión Actual</span>
+                            </div>
+                        </div>
+                        <div class="profile-stats">
+                            <div class="stat-box">
+                                <h4>Autorización</h4>
+                                <p>Concedida</p>
+                            </div>
+                            <div class="stat-box">
+                                <h4>Riesgo</h4>
+                                <p>0.01%</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Vista: CONFIGURACIÓN -->
+                <section id="view-settings" class="view-section">
+                    <div class="settings-grid">
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h3>Autodefensa Activa</h3>
+                                <p>Bloqueo automático de IP anómalas e intrusiones.</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h3>Núcleo Predictivo IA</h3>
+                                <p>Habilita el modelo de Machine Learning para análisis en tiempo real.</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h3>Protocolo de Emergencia</h3>
+                                <p>Apaga todos los servicios externos en caso de brecha.</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox">
+                                <span class="slider red-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </section>
+
             </div>
         </main>
     </div>
-
+    
     <script src="app.js"></script>
 </body>
 </html>

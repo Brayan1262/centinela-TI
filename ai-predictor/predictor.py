@@ -9,8 +9,26 @@ import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
 from datetime import datetime
+import os
 
-API_URL = "http://localhost:8080/api/metricas/recientes"
+BACKEND_HOST = os.environ.get("BACKEND_HOST", "http://localhost:8085")
+API_URL = f"{BACKEND_HOST}/api/metricas/recientes"
+ALERTA_URL = f"{BACKEND_HOST}/api/alertas"
+
+def send_alert_to_backend(message):
+    try:
+        payload = {
+            "mensaje": message,
+            "nivelCriticidad": "CRITICO",
+            "timestamp": datetime.now().isoformat()
+        }
+        response = requests.post(ALERTA_URL, json=payload)
+        if response.status_code == 201:
+            print("✅ [CENTINELA AI] - Alerta guardada en base de datos.")
+        else:
+            print(f"❌ [CENTINELA AI] - Error al guardar alerta en DB: {response.status_code}")
+    except Exception as e:
+        print(f"❌ [CENTINELA AI] - Excepción al conectar con BD de alertas: {e}")
 
 def print_cyber_report(current_ram, predicted_ram, minutes_ahead):
     print("\n" + "="*50)
@@ -20,7 +38,9 @@ def print_cyber_report(current_ram, predicted_ram, minutes_ahead):
     print(f"🔮 Predicción a {minutes_ahead} mins: {predicted_ram:.2f}%")
     
     if predicted_ram > 90.0:
-        print("🚨 ¡ALERTA CRÍTICA! 🚨 POSIBLE DESBORDAMIENTO DE MEMORIA INMINENTE")
+        msg = f"POSIBLE DESBORDAMIENTO DE MEMORIA INMINENTE. RAM Proyectada: {predicted_ram:.2f}%"
+        print(f"🚨 ¡ALERTA CRÍTICA! 🚨 {msg}")
+        send_alert_to_backend(msg)
     elif predicted_ram > 75.0:
         print("⚠️ ADVERTENCIA: Tendencia al alza, vigilar memoria.")
     else:

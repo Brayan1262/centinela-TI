@@ -4,7 +4,7 @@ import requests
 from datetime import datetime
 
 SERVIDOR_ID = "BRAYAN-PC-01"
-BACKEND_URL = "http://localhost:8080/api/metricas"
+BACKEND_URL = "http://localhost:8085/api/metricas"
 
 def obtener_metricas():
     """Obtiene las métricas actuales del sistema (CPU, RAM, Disco)."""
